@@ -5,15 +5,15 @@ import os, sys
 def usage():
     print "usage: %s [file.c]" % (sys.argv[0])
 
-def main():
+def c2bin(argv):
     # check # of argv
-    if len(sys.argv) < 2:
+    if len(argv) < 2:
         usage()
         return
     
     # open file
     cfilebuf = []
-    with open(sys.argv[1], "rt") as f:
+    with open(argv[1], "rt") as f:
         cfilebuf = f.readlines()
     
     # search the c variable and 
@@ -57,11 +57,13 @@ def main():
                     carray.append(e4)
                     
     # output to a binary file
-    outputfile = "%s.bin" % ( sys.argv[1].split(".")[0] )
+    outputfile = "%s.bin" % ( argv[1].split(".")[0] )
     carray = bytearray(carray)
     with open(outputfile, "wb") as f:
         f.write(carray)
     
+    # return outputfile
+    return outputfile
     
 if __name__ == "__main__":
-    main()
+    c2bin(sys.argv)
