@@ -3,13 +3,17 @@
 import os, sys
 
 def usage():
-    print "usage: %s [file.c]" % (sys.argv[0])
+    print "usage: %s [file.c] [L/B]" % (sys.argv[0])
 
 def c2bin(argv):
     # check # of argv
-    if len(argv) < 2:
+    if len(argv) < 3:
         usage()
         return
+    elif argv[-1] not in ['l', 'L', 'b', 'B']:
+        print "LAST ARG ERROR"
+        usage()
+        return     
     
     # open file
     cfilebuf = []
@@ -43,19 +47,28 @@ def c2bin(argv):
                     e2 = int(element[2:4],  16)
                     e1 = int(element[4:6],  16)
                     #print "%s = %x %x | %x " % (element, e1, e2, int(element, 16))
-                    carray.append(e1)
-                    carray.append(e2)
+                    if argv[-1] in ['l', 'L']:
+                        carray.append(e1)
+                        carray.append(e2)
+                    else:
+                        carray.append(e2)
+                        carray.append(e1)
                 elif len_element == 10:     # it's long, 0x12345678
                     e4 = int(element[2:4],  16)
                     e3 = int(element[4:6],  16)
                     e2 = int(element[6:8],  16)
                     e1 = int(element[8:10], 16)
                     #print "%s = %x %x %x %x | %x " % (element, e1, e2, e3, e4, int(element, 16))
-                    carray.append(e1)
-                    carray.append(e2)
-                    carray.append(e3)
-                    carray.append(e4)
-                    
+                    if argv[-1] in ['l', 'L']:
+                        carray.append(e1)
+                        carray.append(e2)
+                        carray.append(e3)
+                        carray.append(e4)
+                    else:
+                        carray.append(e4)
+                        carray.append(e3)
+                        carray.append(e2)
+                        carray.append(e1)
     # output to a binary file
     outputfile = "%s.bin" % ( argv[1].split(".")[0] )
     carray = bytearray(carray)
