@@ -2,13 +2,23 @@
 '''
 output binary format:
 [Parameters][Header Len][Binary Len][Binary][CRC32]
+
+install crccheck:
+linux: sudo pip install crccheck
+windows: c:\Python27\Scripts\pip install crccheck
 '''
-import sys, getopt, struct, binascii
+import sys, getopt, struct
+from crccheck.crc import Crc32Mpeg2
 
 def usage():
     print "usage: %s -p '[para1 para2 ... paraN]' -i [input filename] -o [output filename]" % (sys.argv[0])
+    # usage:
+    # make_header.py -p '[para1 para2 ... paraN]' -i [input filename] -o [output filename]
     # example:
-    # make_header.py ap eeprom ver: 3.7 2017/05/06 -i kernel.bin -o firmware.bin
+    # make_header.py -p 'ap eeprom ver: 3.7 2017/05/06' -i kernel.bin -o firmware.bin
+
+def crc32_mpeg2(buf):
+    return Crc32Mpeg2.calc(bytearray(buf))
 
 def main():
     # parse input args
@@ -38,7 +48,7 @@ def main():
     # read ifilename to ibuf and calculate crc32
     with open(ifilename, "rb") as f:
         ibuf = f.read()
-    crc32 = binascii.crc32(ibuf) & 0xffffffff
+    crc32 = crc32_mpeg2(ibuf)
 
     # make header
     with open(ofilename, "wb") as f:
@@ -53,3 +63,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+    #buffer = [0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39]
+    #print "0x%08X" % crc32_mpeg2(buffer)
