@@ -6,9 +6,13 @@ output binary format:
 install crccheck:
 linux: sudo pip install crccheck
 windows: c:\Python27\Scripts\pip install crccheck
+
+ref url:
+http://www.sunshine2k.de/coding/javascript/crc/crc_js.html
+https://pypi.python.org/pypi/crccheck/0.6
 '''
 import sys, getopt, struct
-from crccheck.crc import Crc32Mpeg2
+from crccheck.crc import Crc32Mpeg2, Crc32
 
 def usage():
     print "usage: %s -p '[para1 para2 ... paraN]' -i [input filename] -o [output filename]" % (sys.argv[0])
@@ -19,6 +23,9 @@ def usage():
 
 def crc32_mpeg2(buf):
     return Crc32Mpeg2.calc(bytearray(buf))
+
+def crc32_std(buf):
+    return Crc32.calc(bytearray(buf))
 
 def main():
     # parse input args
@@ -48,7 +55,7 @@ def main():
     # read ifilename to ibuf and calculate crc32
     with open(ifilename, "rb") as f:
         ibuf = f.read()
-    crc32 = crc32_mpeg2(ibuf)
+    crc32 = crc32_std(ibuf)
 
     # make header
     with open(ofilename, "wb") as f:
@@ -64,4 +71,4 @@ def main():
 if __name__ == "__main__":
     main()
     #buffer = [0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39]
-    #print "0x%08X" % crc32_mpeg2(buffer)
+    #print "CRC32_MPEG2=0x%08X, CRC32_STD=0x%08X" % (crc32_mpeg2(buffer), crc32_std(buffer))
