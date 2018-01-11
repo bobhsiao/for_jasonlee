@@ -18,6 +18,10 @@ def ReadWavs(tWavfiles):
             ret_wavbuf += wavdata[44:] # 44 means skipping header
             # get sample rate
             wav_samplerate = struct.unpack('i', wavdata[24:28])[0]
+            # get nr_channels
+            wav_channels = struct.unpack('H', wavdata[22:24])[0]
+            # get bitspersample
+            wav_bps = struct.unpack('H', wavdata[34:36])[0]
             # ret_wavbuf alignment 
             wav_len = len(wavdata) - 44
             if wav_len % 4 != 0:
@@ -26,7 +30,7 @@ def ReadWavs(tWavfiles):
                 align_shift = 0
             ret_wavbuf += " " * align_shift  # paddings for 4-byte alignment
             # save wavname, addr, len, sample rate
-            ret_wavstruct.append([wav, wav_addr, wav_len, wav_samplerate])
+            ret_wavstruct.append([wav, wav_addr, wav_len, wav_samplerate, wav_channels, wav_bps])
             wav_addr += (wav_len + align_shift)
     
     return ret_wavbuf, ret_wavstruct
@@ -45,14 +49,16 @@ def MakeWavH(tOutputName, tStartAddr, tWavList):
         # write wav defines
         for item in tWavList:
             basename = os.path.basename(item[0]).upper().replace(".", "_")
-            cheaderfile.write("#define %-24s (0x%08X)\n" % (basename + "_ADDR", item[1] + numStartAddr))
-            cheaderfile.write("#define %-24s (0x%08X)\n" % (basename + "_SIZE", item[2]))
-            cheaderfile.write("#define %-24s (0x%08X)\n" % (basename + "_RATE", item[3]))
+            cheaderfile.write("#define %-36s (0x%08X)\n" % (basename + "_ADDR",           item[1] + numStartAddr))
+            cheaderfile.write("#define %-36s (0x%08X)\n" % (basename + "_SIZE",           item[2]))
+            cheaderfile.write("#define %-36s (0x%08X)\n" % (basename + "_RATE",           item[3]))
+            cheaderfile.write("#define %-36s (0x%08X)\n" % (basename + "_CHANNEL",        item[4]))
+            cheaderfile.write("#define %-36s (0x%08X)\n" % (basename + "_BIT_PER_SAMPLE", item[5]))
             cheaderfile.write("\n")
             wav_bin_size += item[2]
             #print item
-        cheaderfile.write("#define %-24s (0x%08X)\n" % ("WAV_BIN_START_ADDR", numStartAddr))
-        cheaderfile.write("#define %-24s (0x%08X)\n" % ("WAV_BIN_SIZE", wav_bin_size))
+        cheaderfile.write("#define %-36s (0x%08X)\n" % ("WAV_BIN_START_ADDR", numStartAddr))
+        cheaderfile.write("#define %-36s (0x%08X)\n" % ("WAV_BIN_SIZE", wav_bin_size))
         
         # write something unchanged
         cheaderfile.write(textwrap.dedent("""\n\
@@ -61,6 +67,8 @@ def MakeWavH(tOutputName, tStartAddr, tWavList):
                 unsigned int  wav_addr;
                 unsigned int  wav_size;
                 unsigned int  sample_rate;
+                unsigned char nr_channel;
+                unsigned char bit_per_sample;
             };
 
             extern struct wavRamDataInfo wavData[];
@@ -79,7 +87,7 @@ def MakeWavC(tHeaderFile, tOutputName, tWavList):
  
         for wav in tWavList:
             basename = os.path.basename(wav[0]).upper().replace(".", "_")
-            cfile.write("{%-24s, %-24s, %-24s, %-24s},\n" % ('"' + os.path.basename(wav[0]) + '"', basename + "_ADDR", basename + "_SIZE", basename + "_RATE"))
+            cfile.write("{%-24s, %-24s, %-24s, %-24s, %-24s, %-36s},\n" % ('"' + os.path.basename(wav[0]) + '"', basename + "_ADDR", basename + "_SIZE", basename + "_RATE", basename + "_CHANNEL", basename + "_BIT_PER_SAMPLE"))
         cfile.write("};\n")
 
         # write something unchanged
