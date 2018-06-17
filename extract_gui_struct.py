@@ -45,7 +45,8 @@ def extract_gui_struct(argv):
     with open(output_filename, "wb") as f:
         f.write("#include <stdlib.h>\n")
         f.write("#include \"GUI.h\"\n")
-        f.write("#ifndef GUI_CONST_STORAGE\n  #define GUI_CONST_STORAGE const\n#endif\n\n")
+        f.write("#include \"Window_Pic.h\"\n\n")
+        f.write("#undef GUI_CONST_STORAGE\n#define GUI_CONST_STORAGE \n\n")
         
         for s in structs:
             for line in s:

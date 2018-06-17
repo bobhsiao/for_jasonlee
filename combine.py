@@ -42,15 +42,15 @@ def combine(argv):
     guardtext = argv[-3].replace(".bin", "_H_INCLUDE").upper()
     print "creating %s ..." % (cheadfilename)
     with open(cheadfilename, "wt") as cheaderfile:
+        __BASE__ = argv[-1]
         cheaderfile.write("#ifndef __%s__\n" % guardtext)
         cheaderfile.write("#define __%s__\n\n" % guardtext)
-        cheaderfile.write("#define %-24s %s\n" % ("PIC_ADDR", ("_ac" + binfiles[0].replace(".bin", "")))) #TODO!
-        __BASE__ = int(argv[-1], 16)
+        cheaderfile.write("#define %-24s (%s)\n" % ("PIC_ADDR", __BASE__))
         # print defines
         for file in binfiles:
             def_start = "_ac" + file.replace(".bin", "")
             def_size  = "_ac" + file.replace(".bin", "_size")
-            cheaderfile.write("#define %-24s (0x%08X)\n" % (def_start, __BASE__ + total_size))
+            cheaderfile.write("#define %-24s (PIC_ADDR + 0x%08X)\n" % (def_start, total_size))
             cheaderfile.write("#define %-24s (0x%08X)\n" % (def_size, binfile_size[file]))
             total_size += binfile_size[file]
         

@@ -78,7 +78,7 @@ def make_wav_header(output_name, start_address, wav_list):
     wav_bin_size = 0
     with open(output_name, "w") as ofile:
         # convert start_address from ascii to int
-        num_start_addr = int(start_address, 16)
+        str_start_addr = start_address
 
         # write guard text
         guardtext = output_name.replace(".h", "_H").upper()
@@ -88,15 +88,15 @@ def make_wav_header(output_name, start_address, wav_list):
         # write wav defines
         for item in wav_list:
             basename = os.path.basename(item[0]).upper().replace(".", "_")
-            ofile.write("#define %-36s (0x%08X)\n" % (basename + "_ADDR", item[1] + num_start_addr))
-            ofile.write("#define %-36s (0x%08X)\n" % (basename + "_SIZE", item[2]))
-            ofile.write("#define %-36s (0x%08X)\n" % (basename + "_RATE", item[3]))
-            ofile.write("#define %-36s (0x%08X)\n" % (basename + "_CHANNEL", item[4]))
-            ofile.write("#define %-36s (0x%08X)\n" % (basename + "_BIT_PER_SAMPLE", item[5]))
+            ofile.write("#define %-36s (%-16s + 0x%08X)\n" % (basename + "_ADDR", str_start_addr, item[1]))
+            ofile.write("#define %-36s (0x%08X)\n"         % (basename + "_SIZE", item[2]))
+            ofile.write("#define %-36s (0x%08X)\n"         % (basename + "_RATE", item[3]))
+            ofile.write("#define %-36s (0x%08X)\n"         % (basename + "_CHANNEL", item[4]))
+            ofile.write("#define %-36s (0x%08X)\n"         % (basename + "_BIT_PER_SAMPLE", item[5]))
             ofile.write("\n")
             wav_bin_size += item[2]
             #print item
-        ofile.write("#define %-36s (0x%08X)\n" % ("WAV_BIN_START_ADDR", num_start_addr))
+        ofile.write("#define %-36s (%-16s)\n"  % ("WAV_BIN_START_ADDR", str_start_addr))
         ofile.write("#define %-36s (0x%08X)\n" % ("WAV_BIN_SIZE", wav_bin_size))
 
         # write something unchanged
@@ -167,7 +167,7 @@ def main():
     wavfiles = []
     wavbuf = ""
     wavlist = []
-    start_address = 0
+    start_address = ""
     output_bin = ""
     output_c = ""
     output_h = ""
